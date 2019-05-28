@@ -3,6 +3,8 @@
 # author: ******@qq.com
 import matplotlib.pyplot as plt
 import math
+import numpy as np
+from numpy.linalg import solve
 
 
 # ===================================================  lagrange插值  =================================================================
@@ -72,16 +74,51 @@ def newton(data_set, x_p, x_7):
 
 
 # ============================================================== 画图 =====================================================
-def draw_picture(x_list, y_list, node):
+def draw_picture(x_list, y_list, node_n, node_l):
     plt.title("newton")
     plt.xlabel("x")
     plt.ylabel("y")
-    # plt.plot(x_list, y_list, color="red")
+    # 插值原函数函数
+    l_x = np.linspace(0.1, 1, 5000)
+    l_y = [math.log(i, math.e) for i in l_x]
+    plt.plot(l_x, l_y, color="black")
+    # # 插值点
     for i in range(len(x_list)):
         plt.scatter(x_list[i], y_list[i], color="purple", linewidths=2)
-    plt.scatter(node[0], node[1], color="blue", linewidth=2)
+    # newton插值点
+    plt.scatter(node_n[0], node_n[1], color="blue", linewidth=2)
+    # Lagrange插值点
+    plt.scatter(node_l[0], node_l[1], color="yellow", linewidth=2)
     plt.show()
-    
+
+
+def min_binary_mul(x_n, y_n):
+    # 求解最小二乘法
+    x_total = 0  # x的和
+    y_total = 0  # y的和
+    x_y_total = 0  # x*y的和
+    x_x_total = 0  # x*x的和
+    for i in range(len(x_n)):
+        x_total += x_n[i]
+        y_total += y_n[i]
+        x_x_total += x_n[i] ** 2
+        x_y_total += x_n[i] * y_n[i]
+    a = np.mat([[len(x_n), x_total], [x_total, x_x_total]])
+    b = np.mat([y_total, x_y_total]).T
+    # 求解参数
+    result = solve(a, b)
+    # 画图
+    plt.xlabel("x")
+    plt.ylabel("y")
+    # 插值点
+    for i in range(len(x_n)):
+        plt.scatter(x_n[i], y_n[i], color="purple", linewidths=2)
+    plt.axis([-2, 2, -2, 2])
+    x_value = np.linspace(-2, 2, 1000)
+    y_line = [result[0][0] + result[1][0] * x_t for x_t in x_value]
+    plt.scatter(x_value, y_line, color="red", linewidths=1)
+    plt.show()
+
 
 if __name__ == '__main__':
     x = 0.54
@@ -94,5 +131,7 @@ if __name__ == '__main__':
     print("真值:{}".format(math.log(x, math.e)))
     print("拉格朗日插值:{}".format(lagrange))
     print("牛顿插值:{}".format(newton))
-    #  画图
-    draw_picture(x_1, y_1, (x, newton))
+    # 画图
+    draw_picture(x_1, y_1, (x, newton), (x, lagrange))
+    # 最小二乘求解画图
+    min_binary_mul(x_1, y_1)
